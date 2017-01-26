@@ -3,9 +3,14 @@
 @author: David Jimenez
 """
 import pandas as pd
-import itertools
+
 
 def compTable():
+    
+#==============================================================================
+#     This method generates the composition table of pairs of conjunctions for later use.    
+#==============================================================================
+    
     indAndCol = ['p','m','o','F','D','s','e','S','d','f','O','M','P']
     compoTable = pd.DataFrame(columns=indAndCol, index = indAndCol)
     compoTable.ix['p'] = ['p',	'p',	'p',	'p',	'p',	'p',	'p',	'p',	'pmosd',	'pmosd',	'pmosd',	'pmosd',	'pmoFDseSdfOMP']
@@ -24,58 +29,74 @@ def compTable():
     return compoTable
 
 def multipleDisjunctions(asso, table):
+    
+#==============================================================================
+#     This method computes the composition of conjunctions of relations.
+#     Ultimately, the result is the conjunction of every composition of the distribution
+#     of relations in the two conditions - due to the distributive property.
+#==============================================================================
+    
     compo =[]
     for i  in range(0, len(asso)):
+        #Gets the composition of all distributions of the relations.
         compo.extend(list(table.ix[asso[i][0],asso[i][1]]))
-    
+    #Removes duplicated relations as this is a conjunction.
     compoDisj = list(set(compo))
     
     return compoDisj
 
-def simple3(c1,c2,c3):
+if __name__ == '__main__':
+
+#==============================================================================
+#     Generate the Composition Table for the Allen's Temporal Algebra    
+#==============================================================================
+    
+    compoTable = compTable()  
+    
+#==============================================================================
+#     Print the instructions and catch the input from the user
+#==============================================================================
+    
+    print(' ')
+    print(' ')
+    print(' ')
+    print('This program checks path consistency between 3 edges in the context of Allans interval algebra. ')
+    print('The relations are as follows: precedes (p), meets (m), overlaps (o), finished by (F), contains (D), starts (s), equals (e).')
+    print('A capital letter means the converse relation, e.g.: finished by (F) and finishes (f).')
+    input('Press Enter to continue')
+        
+    c1 = list(str(input('Enter C1. E.g.: p , if the constraint is I1 {p} I2. Do not introduce quotations, just p... : ')))
+    c2 = list(str(input('Enter C2. E.g.: p , if the constraint is I2 {p} I3... :  ')))
+    c3 = list(str(input('Enter C3. E.g.: p , if the constraint is I1 {p} I3. OR leave blank if you do not know... : ')))
+
+#==============================================================================
+#     Check weather the conditions input conditions are a conjunction of various relations
+#     or simple relations.
+#==============================================================================
 
     if(len(c1) | len(c2) >1):
-        association = [[c1[a],c2[b]] for a in range(0,len(c1)) for b in range(0,len(c2))]
-        c3_temp = multipleDisjunctions(association,compoTable)
+        #This distributes the conjunction of relations and computes the result
+        #of each simple composition of two relations
+        distr = [[c1[a],c2[b]] for a in range(0,len(c1)) for b in range(0,len(c2))]
+        c3_temp = multipleDisjunctions(distr,compoTable)
     else:
+        #If the relations are simple relations and no conjunctions, this
+        #calculates the composition.
         c3_temp = compoTable.ix[c1,c2]
+        
+#==============================================================================
+#     If no input was given for I1 {relation} I3, then the program generates the
+#     answer. Otherwise, if the input was given, then the program checks the input,
+#     and refines the solution, or if there is no path consistency, it returns FALSE.
+#==============================================================================
         
     if(len(c3)==0):
         c3_prime = c3_temp
     else:
         c3_prime = list(set(c3_temp).intersection(c3))
-
-    return c3_prime
-     
+    
     if (len(c3_prime)<1):
         print('FALSE. Constraint C3 is not path-consistent.')
     else:
-        print('Constraint C3 prime is')
-        print(c3_prime)
-
-if __name__ == '__main__':
-    compoTable = compTable()
-    c = []
-    i = 1
-    ctemp = [1]
-    while len(ctemp) != 0:
-        ctemp = list(str(input('Enter C'+str(i)+', e.g.: type p , if the constraint is I'+str(i)+' {p} I'+str(i+1)+'. Do not introduce quotations, just p. If your network does not have more nodes, leave this blank and hit enter: ')))
-        if len(ctemp) != 0:
-            c.append(ctemp)
-            i = i+1
-        
-    cs1 = list(str(input('Enter C1, e.g.: p , if the constraint is I1 {p} I2. Do not introduce quotations, just p... : ')))
-    cs2 = list(str(input('Enter C2, e.g.: p , if the constraint is I2 {p} I3... :  ')))
-    cs3 = list(str(input('Enter C3, e.g.: p , if the constraint is I1 {p} I3. OR leave blank if you do not know... : ')))
-
-    
-    
-    
-    
-    
-#==============================================================================
-#     cs1 = list(str(input('Enter C1, e.g.: p , if the constraint is I1 {p} I2. Do not introduce quotations, just p... : ')))
-#     cs2 = list(str(input('Enter C2, e.g.: p , if the constraint is I2 {p} I3... :  ')))
-#     cs3 = list(str(input('Enter C3, e.g.: p , if the constraint is I1 {p} I3. OR leave blank if you do not know... : ')))
-# 
-#==============================================================================
+        print('Constraint C3 prime is:')
+        print(''.join(c3_prime))
